@@ -5,7 +5,7 @@ import pytz, uuid
 timezone = pytz.timezone("America/Chicago")
 
 def str_to_time(s):
-    return datetime.strptime(s.strip().upper(), "%I:%M%p").time()
+    return datetime.strptime(s.strip().upper(), "%I:%M %p").time()
 
 # convert to .ics calendar
 def build_ics(parsed, term_start, term_end):
@@ -38,9 +38,9 @@ def build_ics(parsed, term_start, term_end):
         event.add("summary", f"{exam['course']} Exam")
         event.add("location", exam["location"])
 
-        exam_date = datetime.strptime(exam["date"] + " " + exam["start_time"], "%B %d %I:%M%p")
+        exam_date = datetime.strptime(exam["date"] + " " + exam["start_time"], "%B %d %I:%M %p")
         dtstart = timezone.localize(exam_date)
-        dtend = timezone.localize(datetime.strptime(exam["date"] + " " + exam["end_time"], "%B %d %I:%M%p"))
+        dtend = timezone.localize(datetime.strptime(exam["date"] + " " + exam["end_time"], "%B %d %I:%M %p"))
 
         event.add("dtstart", dtstart)
         event.add("dtend", dtend)
