@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
 import tempfile
+from pprint import pprint
 from datetime import date
 
 from ocr_utils import preprocess_img
@@ -20,6 +21,8 @@ async def upload(file: UploadFile = File(...)):
         # ocr -> parse 
         text = preprocess_img(tmp_path)
         parsed = parse_schedule(text)
+
+        pprint(parsed)
 
         term_start = date(2025, 9, 3)
         term_end = date(2025, 12, 18)

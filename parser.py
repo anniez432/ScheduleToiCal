@@ -1,13 +1,41 @@
 import re
 
 # expand the madison weekday abbreviations
-day_map = {"M": "MO", "T": "TU", "W": "WE", "R": "TH", "F": "FR", "TR": ["TU", "TH"]}
+day_map = {
+    "M": "MO",
+    "T": "TU",
+    "W": "WE",
+    "R": "TH",
+    "F": "FR",
+    "TR": ["TU", "TH"],
+    "MWF": ["MO", "WE", "FR"],
+    "WF": ["WE", "FR"],
+    "MW": ["MO", "WE"],
+    "MR": ["MO", "TH"],
+}
+class_pattern = re.compile(
+    r"^(?:[*•«¢-]\s*)?"                        # optional bullet/symbol
+    r"(LEC|DIS|SEM|LAB)\s+(\d+)\s+"           # section type + number
+    r"([MTWRF]+)\s+"                          # days (like MWF, TR, MW, etc.)
+    r"(\d{1,2}:\d{2}\s*[APMapm]+)\s*-\s*"     # start time
+    r"(\d{1,2}:\d{2}\s*[APMapm]+)\s+"         # end time
+    r"(.+?)\s+Room\s+([A-Za-z0-9]+)$"         # building + room
+)
 
 # function to return list of day(s)
 def expand_days(days_str: str):
-    days_str = days_str.strip()
+    days_str = days_str.strip().replace(",","")
     if days_str in day_map:
         return day_map[days_str] if isinstance(day_map[days_str], list) else [day_map[days_str]]
+    
+    result = []
+    for char in days_str:
+        if char in day_map:
+            mapped = day_map[char]
+            result.append(mapped if isinstance(mapped, str) else mapped[0])
+        else:
+            raise ValueError(f"Expected weekday abbreviation, got: {char}")
+        
     return list(days_str)
 
 # function that parses the text into necessary info
@@ -36,11 +64,8 @@ def parse_schedule(text: str):
             in_exams = True
             continue
 
-        if not in_exams and re.match(r"^(LEC|DIS|SEM|LAB)", line):
-            match = re.match(
-                r"^(LEC|DIS|SEM|LAB)\s+(\d+)\s+([A-Za-z]+)\s+(\d{1,2}:\d{2}\s*[APMapm]+)\s*-\s*(\d{1,2}:\d{2}\s*[APMapm]+)\s+(.+?)\s+Room\s+([A-Za-z0-9]+)$",
-                line
-            )
+        if not in_exams and re.match(r"^(?:[*•«¢-]\s*)?(LEC|DIS|SEM|LAB)", line):
+            match = class_pattern.match(line)
             # match the class info
             if match:
                 section_type = match.group(1)
@@ -53,15 +78,16 @@ def parse_schedule(text: str):
 
                 # add to class info
                 classes.append({
-                    "course": current_course,
-                    "section_type": section_type,
-                    "section_number": section_number,
-                    "days": expand_days(days_str),
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "location": building,
-                    "room": room
-                })
+            "course": current_course,
+            "section_type": section_type,
+            "section_number": section_number,
+            "days": expand_days(days_str),
+            "start_time": start_time,
+            "end_time": end_time,
+            "title": f"{section_type} {section_number} (Room {room})",  # <-- goes in summary/title
+            "location": building,  # <-- goes in ICS location field
+            "room": room
+        })
             else:
                 print("Did not match class line:", line)
 
