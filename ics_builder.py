@@ -1,15 +1,21 @@
-from icalendar import Calendar, Event, Alarm
+from icalendar import Calendar, Event, Alarm, vDuration
 from datetime import datetime, date, time, timedelta
 import pytz, uuid
 
 timezone = pytz.timezone("America/Chicago")
 
 building_address_map = {
-    "Van Vleck": "480 Lincoln Dr, Madison, WI 53706",
-    "Sterling": "475 N Charter St, Madison, WI 53706",
-    "Biochemistry Building": "420 Henry Mall, Madison, WI 53706",
-    # add more as needed
+    "Van Vleck": "Van Vleck, 480 Lincoln Dr, Madison, WI 53706",
+    "Sterling": "Sterling Hall, 475 N Charter St, Madison, WI 53706",
+    "Biochemistry Building": "Biochemistry Building, 420 Henry Mall, Madison, WI 53706",
+    "Engineering Hall": "Engineering Hall, 1415 Engineering Dr, Madison, WI 53706",
+    "Chemistry": "Chemistry, 1101 University Ave, Madison, WI 53706",
+    "Helen C. White Hall": "Helen C. White Hall, 600 N Park St, Madison, WI 53706",
+    "MORGRIDGE": "Mogridge Hall, 1205 University Ave, Madison, WI 53706",
+    "Genetics-Biotechnology Center Building": "Genetics Building, 425 Henry Mall, Madison, WI 53706",
+    "Van Hise Hall": "Van Hise, 1220 Linden Dr, Madison, WI 53706"
 }
+
 
 def str_to_time(s):
     return datetime.strptime(s.strip().upper(), "%I:%M %p").time()
@@ -24,12 +30,11 @@ def build_ics(parsed, term_start, term_end):
     for classEvent in parsed["classes"]:
         event = Event()
 
-        summary = f"{classEvent['course']} (Room {classEvent['room']})"
-        event.add("summary", summary)
+        event.add("summary", classEvent["title"])
 
         building = classEvent["location"]
-        address = building_address_map.get(building, building)  # fallback: use building name
-        event.add("location", address)
+        location = building_address_map.get(building, building)  # fallback: use building name
+        event.add("location", location)
     
         dtstart = timezone.localize(datetime.combine(term_start, str_to_time(classEvent["start_time"])))
         dtend = timezone.localize(datetime.combine(term_start, str_to_time(classEvent["end_time"])))
@@ -44,10 +49,15 @@ def build_ics(parsed, term_start, term_end):
         })
         event.add("uid", str(uuid.uuid4()))
         
+        event.add("X-APPLE-TRAVEL-ADVISORY-BEHAVIOR", "AUTOMATIC")
+        event.add("X-APPLE-TRAVEL-TIME", "15")  # in minutes
+
+
         alarm = Alarm()
-        alarm.add("action", "DISPLAY")
-        alarm.add("description", "Leave now")
-        alarm.add("trigger", timedelta(minutes=-15))  # 15 minutes before event
+        alarm.add('action', 'DISPLAY')
+        alarm.add('description', 'Leave now')
+        alarm.add('TRIGGER', vDuration(timedelta(minutes=-15)))
+        alarm['TRIGGER'].params['RELATED'] = 'START'
         event.add_component(alarm)
 
         cal.add_component(event)

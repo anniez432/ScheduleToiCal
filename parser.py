@@ -19,8 +19,22 @@ class_pattern = re.compile(
     r"([MTWRF]+)\s+"                          # days (like MWF, TR, MW, etc.)
     r"(\d{1,2}:\d{2}\s*[APMapm]+)\s*-\s*"     # start time
     r"(\d{1,2}:\d{2}\s*[APMapm]+)\s+"         # end time
-    r"(.+?)\s+Room\s+([A-Za-z0-9]+)$"         # building + room
+    r"(.+?)\s+Room\s+([\w-]+)$"               # building + room
 )
+
+def normalize_course_name(raw_course):
+    """
+    Convert things like 'B M 576' or 'B M1576' into 'BM 1576'
+    """
+    # remove spaces inside letters, but keep digits separate
+    match = re.match(r"([A-Z](?:\s?[A-Z])*)\s*(\d+)", raw_course.replace(" ", ""))
+    if match:
+        dept = match.group(1)
+        number = match.group(2)
+        return f"{dept} {number}"
+    return raw_course
+
+
 
 # function to return list of day(s)
 def expand_days(days_str: str):
@@ -36,11 +50,14 @@ def expand_days(days_str: str):
         else:
             raise ValueError(f"Expected weekday abbreviation, got: {char}")
         
-    return list(days_str)
+    return result
 
 # function that parses the text into necessary info
 def parse_schedule(text: str):
     classes, exams = [], []
+    current_course = None
+    shortened_course = None
+
 
     # break down the lines
     lines = [l.strip() for l in text.splitlines() if l.strip()]
@@ -53,11 +70,14 @@ def parse_schedule(text: str):
     for line in lines:
         print(repr(line))
 
-        # detect course
-        if re.match(r"^[A-Z][A-Z &]+ \d+:", line):
+        course_pattern = re.compile(r"^([A-Z\s]+?)(\d+):")
+
+        if course_pattern.match(line):
             current_course = line
+            shortened_course = normalize_course_name(line.split(":")[0].strip())
             in_exams = False
             continue
+
 
         # detect exam section
         if line.lower().startswith("exams"):
@@ -73,18 +93,18 @@ def parse_schedule(text: str):
                 days_str = match.group(3)
                 start_time = match.group(4)
                 end_time = match.group(5)
-                building = match.group(6)
+                building = match.group(6).strip()
                 room = match.group(7)
 
                 # add to class info
                 classes.append({
-            "course": current_course,
+            "course": shortened_course or current_course,
             "section_type": section_type,
             "section_number": section_number,
             "days": expand_days(days_str),
             "start_time": start_time,
             "end_time": end_time,
-            "title": f"{section_type} {section_number} (Room {room})",  # <-- goes in summary/title
+            "title": f"{shortened_course} {section_type} {section_number} (Room {room})",  # <-- goes in summary/title
             "location": building,  # <-- goes in ICS location field
             "room": room
         })
