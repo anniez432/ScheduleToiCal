@@ -14,12 +14,12 @@ day_map = {
     "MR": ["MO", "TH"],
 }
 class_pattern = re.compile(
-    r"^(?:[*•«¢-]\s*)?"                        # optional bullet/symbol
+    r"^(?:[*•«¢+\-]\s*)?"                        # optional bullet/symbol
     r"(LEC|DIS|SEM|LAB)\s+(\d+)\s+"           # section type + number
-    r"([MTWRF]+)\s+"                          # days (like MWF, TR, MW, etc.)
+    r"([MTWRF\s,]+)\s+"                          # days (like MWF, TR, MW, etc.)
     r"(\d{1,2}:\d{2}\s*[APMapm]+)\s*-\s*"     # start time
     r"(\d{1,2}:\d{2}\s*[APMapm]+)\s+"         # end time
-    r"(.+?)\s+Room\s+([\w-]+)$"               # building + room
+    r"(.+?)\s+Room\s+([\w-]+)[.,]?$"               # building + room
 )
 
 def normalize_course_name(raw_course):
@@ -68,6 +68,12 @@ def parse_schedule(text: str):
     print("=== RAW LINES ===")
 
     for line in lines:
+        line = line.strip()
+        line = re.sub(r"\s+", " ", line)
+        line = line.replace("\u200b", "")
+        
+        if "ONLINE" in line.upper():
+            continue
         print(repr(line))
 
         course_pattern = re.compile(r"^([A-Z\s]+?)(\d+):")
@@ -84,13 +90,15 @@ def parse_schedule(text: str):
             in_exams = True
             continue
 
-        if not in_exams and re.match(r"^(?:[*•«¢-]\s*)?(LEC|DIS|SEM|LAB)", line):
+        if not in_exams and re.match(r"^(?:[*•«¢+\-]\s*)?(LEC|DIS|SEM|LAB)", line):
+
+
             match = class_pattern.match(line)
             # match the class info
             if match:
                 section_type = match.group(1)
                 section_number = match.group(2)
-                days_str = match.group(3)
+                days_str = days_str = match.group(3).replace(" ", "").replace(",", "")
                 start_time = match.group(4)
                 end_time = match.group(5)
                 building = match.group(6).strip()

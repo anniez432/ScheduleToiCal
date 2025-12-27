@@ -25,7 +25,7 @@ async def upload(file: UploadFile = File(...)):
         pprint(parsed)
 
         term_start = date(2026, 1, 20)
-        term_end = date(2025, 5, 4)
+        term_end = date(2026, 5, 4)
 
         ics_bytes = build_ics(parsed, term_start, term_end)
 
