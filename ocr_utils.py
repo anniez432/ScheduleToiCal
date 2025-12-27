@@ -1,6 +1,7 @@
 import cv2
 import pytesseract
 
+# preprocess the image
 def preprocess_img(img_path: str) -> str:
     img = cv2.imread(img_path)
 

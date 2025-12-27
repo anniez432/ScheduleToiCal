@@ -1,3 +1,4 @@
+# contains functions that are used to parse the schedule
 import re
 
 # expand the madison weekday abbreviations
