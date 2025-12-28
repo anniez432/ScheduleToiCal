@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import CalendarPreview from "./CalendarPreview";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null); // store classes/exams
+  const [downloadUrl, setDownloadUrl] = useState<string>("");
 
   const upload = async () => {
     if (!file) {
@@ -27,6 +30,7 @@ export default function Home() {
       });
 
       if (response.ok) {
+        /*
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
 
@@ -36,11 +40,30 @@ export default function Home() {
         a.click();
 
         setStatus("Calendar downloaded successfully!");
+        */
+        const data = await response.json();
+
+        // Set preview for the UI
+        setPreviewData({ classes: data.classes, exams: data.exams });
+        setStatus("Preview loaded!");
+
+        // Convert base64 ICS to downloadable blob
+        const icsBlob = new Blob([Uint8Array.from(atob(data.ics_base64), c => c.charCodeAt(0))], {
+          type: "text/calendar",
+        });
+        const url = window.URL.createObjectURL(icsBlob);
+        setDownloadUrl(url);
+
+
       } else {
         setStatus("Failed to process.");
       }
     } catch (error) {
+      console.error(error);
       setStatus("An error occurred during upload.");
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -118,6 +141,20 @@ export default function Home() {
         </button>
 
         <p className = "mt-4 text-center text-white">{status}</p>
+      
+
+        {previewData && <CalendarPreview previewData={previewData} />}
+
+        {downloadUrl && (
+          <a
+            href={downloadUrl}
+            download="schedule.ics"
+            className="block mt-4 text-center font-semibold text-white bg-red-700 py-2 rounded-lg hover:bg-red-600"
+          >
+            Download / Add to Calendar
+          </a>
+        )}
+
       </div>
     </main>
   );
