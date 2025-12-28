@@ -21,7 +21,7 @@ export default function Home() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/upload", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -46,8 +46,8 @@ export default function Home() {
 
   return (
     <main className = "min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-blue-600 p-8 rounded-xl shadow-md w-[420px]">
-        <h1 className="text-2xl font-bold mb-4 text-center">
+      <div className="bg-red-800 p-8 rounded-xl shadow-md w-[420px]">
+        <h1 className="text-2xl font-bold mb-4 text-center text-white/92">
           UW-Madison Schedule to iCal Converter
         </h1>
 
@@ -57,17 +57,22 @@ export default function Home() {
           width={400}
           height={300}
           className="rounded-lg border mb-4"
+          style={{opacity: 0.94}}
         />
 
-        <p className="text-sm text-white text-center mb-4">
-          Upload a screenshot like this. How to: UW portal - Course Schedule - Zoom out to capture full schedule
+        <p className="text-sm text-white/92 text-center mb-4 underline">
+          Upload a screenshot like this (easiest on a laptop)
+        </p>
+
+        <p className="text-sm text-white/92 text-center mb-4">
+          UW portal &rarr; Course Schedule &rarr; Zoom out to capture full schedule
         </p>
 
         <label
           htmlFor="file-upload"
-          className="cursor-pointer bg-white/90 hover:bg-white transition
+          className="cursor-pointer bg-white/95 hover:bg-white/90 transition
                     border-2 border-dashed border-white
-                    rounded-xl p-6 mb-4 flex flex-col items-center text-blue-700"
+                    rounded-xl p-6 mb-4 flex flex-col items-center text-red-800"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -89,7 +94,7 @@ export default function Home() {
           </span>
 
           {file && (
-            <span className="text-xs mt-1 text-blue-600">
+            <span className="text-xs mt-1 text-red-700">
               {file.name}
             </span>
           )}
@@ -106,8 +111,8 @@ export default function Home() {
         <button
           onClick={upload}
           disabled={loading}
-          className="w-full bg-white text-blue-700 font-semibold py-2 rounded-lg
-                    hover:bg-blue-100 disabled:opacity-50"
+          className="w-full bg-white/95 text-red-800 font-semibold py-2 rounded-lg
+                    hover:bg-red-100 disabled:opacity-50"
         >
           {loading ? "Processing…" : "Generate iCal"}
         </button>
