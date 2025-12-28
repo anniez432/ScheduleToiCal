@@ -5,3 +5,5 @@ pillow
 opencv-python
 icalendar
 python-multipart
+ics
+pytz
