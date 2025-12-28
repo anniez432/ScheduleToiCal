@@ -3,8 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import CalendarPreview from "./CalendarPreview";
+import { useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+    document.title = "UW-Madison Schedule to iCal Converter";
+  }, []);
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<string>("");
   const [loading, setLoading] = useState(false);
