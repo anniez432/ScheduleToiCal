@@ -16,7 +16,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000",
                    "https://scheduletoical.onrender.com",
-                   "https://uwmadison-schedule-to-ical.vercel.app/"],
+                   "https://uwmadison-schedule-to-ical.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
