@@ -149,7 +149,7 @@ export default function Home() {
           <a
             href={downloadUrl}
             download="schedule.ics"
-            className="block mt-4 text-center font-semibold text-red-800 bg-white/95 py-2 rounded-lg hover:bg-red-600"
+            className="block mt-4 text-center font-semibold text-red-800 bg-white/95 py-2 rounded-lg hover:bg-red-100"
           >
             Download / Add to Calendar
           </a>

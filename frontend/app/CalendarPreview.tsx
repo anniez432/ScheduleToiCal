@@ -16,10 +16,10 @@ export default function CalendarPreview({ previewData }: { previewData: any }) {
 
   return (
     <div className="bg-white p-4 rounded-xl shadow-md mt-6 max-h-80 overflow-y-auto">
-      <h2 className="text-lg font-bold mb-2 text-center">Preview of Your Schedule</h2>
+      <h2 className="text-lg font-bold mb-2 text-center text-red-800">Preview of Your Schedule</h2>
       {events.map((e, i) => (
         <div key={i} className="mb-2 p-2 border-b last:border-b-0">
-          <p className="font-semibold">{e.title}</p>
+          <p className="font-semibold text-red-800">{e.title}</p>
           <p className="text-sm text-gray-600">
             {e.days.join(", ")} | {e.start_time} - {e.end_time}
           </p>
