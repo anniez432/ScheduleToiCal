@@ -2,6 +2,9 @@
 
 - **Purpose:** Convert a photographed or scanned course schedule into an `.ics` calendar file (iCal) using OCR and simple schedule parsing.
 
+**Check it out!**
+https://uwmadison-schedule-to-ical.vercel.app/
+
 **Features**
 - **OCR-based:** Uses Tesseract (via `pytesseract`) to extract text from schedule images.
 - **Parser:** Extracts course types (lectures, labs, discussions) and exams from the schedule text.
