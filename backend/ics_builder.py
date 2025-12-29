@@ -34,8 +34,8 @@ def build_ics(parsed, term_start, term_end):
 
         event.add("summary", classEvent["title"])
 
-        building = classEvent["location"]
-        location = building_address_map.get(building, building)  # fallback: use building name
+        building = normalize_building(classEvent["location"])
+        location = building_address_map.get(building, classEvent["location"])  # fallback: use building name
         event.add("location", location)
     
         first_day = first_class_date(term_start, classEvent["days"])
@@ -53,9 +53,7 @@ def build_ics(parsed, term_start, term_end):
             "UNTIL": timezone.localize(datetime.combine(term_end, time(23,59))).astimezone(pytz.UTC)
         })
         event.add("uid", str(uuid.uuid4()))
-        
-        event.add("X-APPLE-TRAVEL-ADVISORY-BEHAVIOR", "AUTOMATIC")
-        event.add("X-APPLE-TRAVEL-TIME", "15")  # in minutes
+
 
 
         alarm = Alarm()
@@ -73,18 +71,19 @@ def build_ics(parsed, term_start, term_end):
 
 
     for exam in parsed["exams"]:
-        if not exam["date"] or not exam["start_time"]:
+        if not exam.get("month") or not exam.get("day") or not exam.get("start_time"):
             continue
+
 
         event = Event()
 
         event.add("summary", f"{exam['course']} Exam")
-        event.add("location", exam.get("location"), "")
+        event.add("location", exam.get("location", "Location not specified"))
 
         exam_year = term_end.year
 
-        dtstart = timezone.localize(datetime.strptime(f"{exam['date']} {exam_year} {exam['start_time']}", "%B %d %Y %I:%M %p"))
-        dtend = timezone.localize(datetime.strptime(f"{exam['date']} {exam_year} {exam['end_time']}", "%B %d %Y %I:%M %p"))
+        dtstart = timezone.localize(datetime.strptime(f"{exam['month']} {exam['day']} {exam_year} {exam['start_time']}", "%B %d %Y %I:%M %p"))
+        dtend = timezone.localize(datetime.strptime(f"{exam['month']} {exam['day']} {exam_year} {exam['end_time']}", "%B %d %Y %I:%M %p"))
 
         event.add("dtstart", dtstart)
         event.add("dtend", dtend)
@@ -113,3 +112,6 @@ def first_class_date(term_start, days):
     while start.weekday() not in valid_days:
         start += timedelta(days=1)
     return start
+
+def normalize_building(building:str) -> str:
+    return building.split(" Room ")[0].strip()
